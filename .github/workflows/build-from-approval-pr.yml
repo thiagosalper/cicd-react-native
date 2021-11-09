@@ -1,0 +1,22 @@
+name: build-from-approval-pr
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Verifica total de approves
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./cicd/pr-approvals-count.sh
+
+      - name: Buildar
+        if: env.approvals_count == 1
+        run: curl ...
