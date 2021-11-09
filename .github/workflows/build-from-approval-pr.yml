@@ -17,8 +17,8 @@ jobs:
       - name: Verifica total de approves
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./cicd/pr-approvals-count.sh
+        run: ./scripts/pr-approvals-count.sh
 
       - name: Buildar
         if: env.approvals_count == 1
-        run: curl ...
+        run: echo Aprovado, vai rolar build!
