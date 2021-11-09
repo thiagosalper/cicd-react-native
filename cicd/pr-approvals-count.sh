@@ -1,4 +1,4 @@
-# Doc
+#!/bin/bash
 # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
 
 set -e
