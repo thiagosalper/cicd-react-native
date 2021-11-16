@@ -152,15 +152,25 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('../../keys/android/cicdrn_prod.keystore')
+            storePassword 'thithithi'
+            keyAlias 'cicdrn_prod'
+            keyPassword 'thithithi'
+        }
     }
     buildTypes {
         debug {
+            applicationIdSuffix System.getenv("ANDROID_APPID_SUFFIX") ?: ".debug"
             signingConfig signingConfigs.debug
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+
+            // applicationIdSuffix System.getenv("ANDROID_APPID_SUFFIX") ?: ""
+
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

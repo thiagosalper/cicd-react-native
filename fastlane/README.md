@@ -16,16 +16,21 @@ or alternatively using `brew install fastlane`
 
 # Available Actions
 ## Android
-### android build
+### android bump_version
 ```
-fastlane android build
+fastlane android bump_version
 ```
-build the android application
-### android debug
+Testa incremento
+### android release
 ```
-fastlane android debug
+fastlane android release
 ```
-build debug android app
+Build and upload to Google Play internal test
+### android qa
+```
+fastlane android qa
+```
+QA Build and upload to Firebase App Distribuition
 
 ----
 

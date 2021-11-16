@@ -1,0 +1,2 @@
+json_key_file("../keys/android/pc-api-5501818445264301136-412-187e22d96ddd.json")
+package_name("com.thiagosalper.rncicd")
