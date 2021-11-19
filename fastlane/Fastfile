@@ -61,7 +61,10 @@ platform :android do
       release_status: 'draft',
       json_key: './keys/android/pc-api-5501818445264301136-412-187e22d96ddd.json',
       skip_upload_apk: true,
-      skip_upload_metadata: true
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
     )
   end
 
@@ -72,12 +75,17 @@ platform :android do
  
   desc 'Build and upload to Google Play internal test'
   lane :build_rc do
+    buildNumber = ENV['build_number']
+    versionName = ENV['version_name']
+
     ensure_git_branch
     bump_android
     build_android
     upload_android
+
     add_git_tag(tag: "v#{versionName}-#{buildNumber}-android")
     push_git_tags
+    # avisar no slack ou outro canal
   end
 
   # desc 'QA Build and upload to Firebase App Distribution'
@@ -97,16 +105,3 @@ platform :android do
   # end
 
 end
-
-
-#   # rodar o login firebase pra pegar o token 
-#   # curl -sL firebase.tools | bash
-#   # firebase login 
-#   # firebase logout
-
-  
-# antes de tudo configurei debug e release no build.gradle 
-# configurei o acesso ao firebase cli
-# configurei um novo user usando api user integration do google cloud 
-# adicionei no fastlane o teste com o arquivo gerado ( tive que instalar como root )
-# criei manualmente a primeira buld, pra pegar as keys
