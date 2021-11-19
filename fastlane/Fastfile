@@ -1,6 +1,12 @@
 fastlane_version '2.197.0'
 
+#
+# Métodos genéricos que podem ser usados
+# com ios e android, ou que podem ser portados
+# pra outros projetos
+#
 platform :common do 
+  # Busca pelo arquivo que contem o versionCode e faz a substituicao
   def increment_android_version_number(path, version_number)
     re = /versionCode\s+(\d+)/
     s = File.read(path)
@@ -10,6 +16,7 @@ platform :common do
     f.close
   end
 
+  # Busca pelo arquivo que contem o versionName e faz a substituicao
   def increment_android_version_name(path, version_name)
     re = /versionName\s+("\d+.\d+.\d+")/
     s = File.read(path)
@@ -23,9 +30,20 @@ platform :common do
     f.write(s)
     f.close
   end
+
+  # Adiciona tag de rc
+  def add_tag_and_push(buildNumber, versionName, platform)
+    if (buildNumber && !buildNumber.empty? && versionName && !versionName.empty?)
+      add_git_tag(tag: "v#{versionName}-#{buildNumber}-#{platform}")
+      push_git_tags
+    end
+  end
 end
 
 platform :ios do 
+  # Nao conclui a lane, pois tive problema na instalacao
+  # do plugin firebase_app_distr no mac m1, além disso
+  # nao obtive uma conta apple pra testes
   desc 'QA Build and upload to Firebase App Distribution'
   lane :qa do
     # firebase_app_distribution(
@@ -41,6 +59,7 @@ end
 
 platform :android do
 
+  # Condiciona o bump com o parametro recebido
   def bump_android
     # build_number=999 version_name=1.1.1 fastlane ...
     buildNumber = ENV['build_number']
@@ -53,6 +72,16 @@ platform :android do
     end
   end
 
+  # Sobe pro Console Google Play
+  # a faixa é internal, pois nao configurei os assets
+  # e deixei como draft por nao ter uma faixa publicada
+  #
+  # a json_key pode ser convertida num base64 e guardada 
+  # na parte de seguranca do github, gitlab etc e consumida
+  # usando as ENV VAR
+  # 
+  # os skips sao por nao ter faixa publicada e nao querer
+  # subir assets e infos de publicacao
   def upload_android
     # json_key: ENV["GOOGLE_PLAY_SERVICES_KEY"],
     # transformar em base64 e por no git keys
@@ -68,12 +97,22 @@ platform :android do
     )
   end
 
+  # builda o android, usando .aab mesmo,
+  # caso precise o .apk, tem uma lib que faz a extraçao
+  # estou informando o diretorio pois o fastlane está 
+  # no nivel do RN, e nao no projeto android
   def build_android
     gradle(task: "clean", project_dir: 'android/')
     gradle(task: "bundle", build_type: "Release", project_dir: 'android/')
   end
  
-  desc 'Build and upload to Google Play internal test'
+  # Lane que pega o parametro,
+  # verifica se está na branch correta (master é default)
+  # sobe versao, se tiver parametros
+  # builda
+  # faz o upload
+  # adiciona tag de release
+  desc 'Build and upload to Google Play'
   lane :build_rc do
     buildNumber = ENV['build_number']
     versionName = ENV['version_name']
@@ -83,11 +122,15 @@ platform :android do
     build_android
     upload_android
 
-    add_git_tag(tag: "v#{versionName}-#{buildNumber}-android")
-    push_git_tags
+    add_tag_and_push(buildNumber, versionName, 'android')
     # avisar no slack ou outro canal
   end
 
+  # Tive um problema na instalacao do plugin Firebase App Distribuition
+  # e nao continuei buscando uma solucao, mas basicamente o plugin 
+  # serviria pra subir a build no App Distribuition, mas, caso for
+  # utilizar um servico como Bitrise, ele faz pela plataforma
+  # 
   # desc 'QA Build and upload to Firebase App Distribution'
   # lane :build_qa do
   #   gradle(task: "clean", project_dir: 'android/')
