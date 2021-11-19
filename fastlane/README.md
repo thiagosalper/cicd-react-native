@@ -15,22 +15,21 @@ Install _fastlane_ using
 or alternatively using `brew install fastlane`
 
 # Available Actions
+## iOS
+### ios qa
+```
+fastlane ios qa
+```
+QA Build and upload to Firebase App Distribution
+
+----
+
 ## Android
-### android bump_version
+### android build_rc
 ```
-fastlane android bump_version
-```
-Testa incremento
-### android release
-```
-fastlane android release
+fastlane android build_rc
 ```
 Build and upload to Google Play internal test
-### android qa
-```
-fastlane android qa
-```
-QA Build and upload to Firebase App Distribuition
 
 ----
 

@@ -134,8 +134,8 @@ android {
         applicationId 'com.thiagosalper.rncicd'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0.0"
+        versionCode 4
+        versionName "1.1.4"
     }
     splits {
         abi {
@@ -153,10 +153,10 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('../../keys/android/cicdrn_prod.keystore')
-            storePassword 'thithithi'
-            keyAlias 'cicdrn_prod'
-            keyPassword 'thithithi'
+            storeFile file(System.getenv("KEYSTORE"))
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
         }
     }
     buildTypes {

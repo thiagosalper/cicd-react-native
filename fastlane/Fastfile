@@ -1,27 +1,6 @@
 fastlane_version '2.197.0'
 
-# before_all do 
-#   ensure_git_branch
-#   ensuure_git_status_clean
-#   git_pull
-# end
-
-platform :ios do 
-  desc 'QA Build and upload to Firebase App Distribution'
-  lane :qa do
-    # firebase_app_distribution(
-    #   app: 'APP-ID'
-    #   testers: 'TESTER-EMAILS',
-    #   groups: 'TESTER-GROUP',
-    #   release_notes: 'RELEASE-NOTE',
-    #   firebase_cli_path: '/usr/local/bin/firebase',
-    #   ipa_path: 'IPA-PATH'
-    # )
-  end
-end 
-
-platform :android do
-
+platform :common do 
   def increment_android_version_number(path, version_number)
     re = /versionCode\s+(\d+)/
     s = File.read(path)
@@ -44,12 +23,26 @@ platform :android do
     f.write(s)
     f.close
   end
- 
-  desc 'Build and upload to Google Play internal test'
-  lane :release do
-    # versionCode 1
-    # versionName "1.0.0"
-    # build_number=999 version_name=1.1.1 fastlane android release
+end
+
+platform :ios do 
+  desc 'QA Build and upload to Firebase App Distribution'
+  lane :qa do
+    # firebase_app_distribution(
+    #   app: 'APP-ID'
+    #   testers: 'TESTER-EMAILS',
+    #   groups: 'TESTER-GROUP',
+    #   release_notes: 'RELEASE-NOTE',
+    #   firebase_cli_path: '/usr/local/bin/firebase',
+    #   ipa_path: 'IPA-PATH'
+    # )
+  end
+end 
+
+platform :android do
+
+  def bump_android
+    # build_number=999 version_name=1.1.1 fastlane ...
     buildNumber = ENV['build_number']
     if (buildNumber && !buildNumber.empty?)
       increment_android_version_number('../android/app/build.gradle', buildNumber)
@@ -58,40 +51,50 @@ platform :android do
     if (versionName && !versionName.empty?)
       increment_android_version_name('../android/app/build.gradle', versionName)
     end
+  end
 
-    gradle(task: "clean", project_dir: 'android/')
-    gradle(task: "bundle", build_type: "Release", project_dir: 'android/')
-
-    # https://docs.fastlane.tools/actions/upload_to_play_store/
+  def upload_android
+    # json_key: ENV["GOOGLE_PLAY_SERVICES_KEY"],
+    # transformar em base64 e por no git keys
     upload_to_play_store(
       track: 'internal',
       release_status: 'draft',
-      # json_key: ENV["GOOGLE_PLAY_SERVICES_KEY"],
-      # transformar em base64 e por no git keys
-      json_key: '../keys/android/pc-api-5501818445264301136-412-187e22d96ddd.json',
+      json_key: './keys/android/pc-api-5501818445264301136-412-187e22d96ddd.json',
       skip_upload_apk: true,
       skip_upload_metadata: true
     )
-
-    # add_git_tag(tag: "v#{versionName}-#{buildNumber}-android")
-    # push_git_tags
   end
 
-  desc 'QA Build and upload to Firebase App Distribution'
-  lane :qa do
+  def build_android
     gradle(task: "clean", project_dir: 'android/')
     gradle(task: "bundle", build_type: "Release", project_dir: 'android/')
-
-    firebase_app_distribution(
-      #transformar em base64 pra por no git keys
-      service_credentials_file: '../keys/android/pc-api-5501818445264301136-412-fd2448722784.json',
-      app: '1:937485818408:android:24a80ab187472f5312f31d', #ENV['FIREBASE_APP_ID'],
-      release_notes_file: "metadata/android/pt-BR/changelogs/default.txt",
-      groups_file: "metadata/android/qa/groups/default.txt"
-    )
-    # caso nao conclua a instalacao do plugin no m1, 
-    # migrar para o bitrise https://medium.com/@arekk/bitrise-firebase-app-distribution-step-9f9eb558fb89
   end
+ 
+  desc 'Build and upload to Google Play internal test'
+  lane :build_rc do
+    ensure_git_branch
+    bump_android
+    build_android
+    upload_android
+    add_git_tag(tag: "v#{versionName}-#{buildNumber}-android")
+    push_git_tags
+  end
+
+  # desc 'QA Build and upload to Firebase App Distribution'
+  # lane :build_qa do
+  #   gradle(task: "clean", project_dir: 'android/')
+  #   gradle(task: "bundle", build_type: "Release", project_dir: 'android/')
+
+  #   firebase_app_distribution(
+  #     #transformar em base64 pra por no git keys
+  #     service_credentials_file: '../keys/android/pc-api-5501818445264301136-412-fd2448722784.json',
+  #     app: '1:937485818408:android:24a80ab187472f5312f31d', #ENV['FIREBASE_APP_ID'],
+  #     release_notes_file: "metadata/android/pt-BR/changelogs/default.txt",
+  #     groups_file: "metadata/android/qa/groups/default.txt"
+  #   )
+  #   # caso nao conclua a instalacao do plugin no m1, 
+  #   # migrar para o bitrise https://medium.com/@arekk/bitrise-firebase-app-distribution-step-9f9eb558fb89
+  # end
 
 end
 
